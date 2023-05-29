@@ -1,12 +1,12 @@
 ---
-title: "Using States"
+title: "States"
 ---
 
 Home Assistant keeps track of the states of entities in a state machine. The state machine has very few requirements:
 
- - Each state is related to an entity identified by an entity id. This id is made up of a domain and an object id. For example `light.kitchen_ceiling`. You can make up any combination of domain and object id, even overwriting existing states.
- - Each state has a primary attribute that describes the state of the entity. In the case of a light this could be for example "on" and "off". You can store anything you want in the state, as long as it's a string (will be converted if it's not).
- - You can store more information about an entity by setting attributes. Attributes is a dictionary that can contain any data that you want. The only requirement is that it's JSON serializable, so you're limited to numbers, strings, dictionaries and lists.
+- Each state is related to an entity identified by an entity id. This id is made up of a domain and an object id. For example `light.kitchen_ceiling`. You can make up any combination of domain and object id, even overwriting existing states.
+- Each state has a primary attribute that describes the state of the entity. In the case of a light this could be for example "on" and "off". You can store anything you want in the state, as long as it's a string (will be converted if it's not).
+- You can store more information about an entity by setting attributes. Attributes is a dictionary that can contain any data that you want. The only requirement is that it's JSON serializable, so you're limited to numbers, strings, dictionaries and lists.
 
 [Description of the state object.](https://www.home-assistant.io/docs/configuration/state_object/)
 
@@ -21,13 +21,14 @@ To get started, create the file `<config dir>/custom_components/hello_state.py` 
 Support for showing text in the frontend.
 
 For more details about this component, please refer to the documentation at
-https://home-assistant.io/cookbook/python_component_basic_state/
+https://developers.home-assistant.io/docs/dev_101_states
 """
 import logging
 
 _LOGGER = logging.getLogger(__name__)
 
-DOMAIN = 'hello_state'
+DOMAIN = "hello_state"
+
 
 def setup(hass, config):
     """Setup the Hello State component. """
@@ -58,7 +59,7 @@ hello_state:
 
 After a start or a restart of Home Assistant the component will create an entry in the log.
 
-```bash
+```log
 16-03-12 14:16:42 INFO (MainThread) [custom_components.hello_state] The 'hello state' component is ready!
 ```
 
@@ -69,10 +70,11 @@ import logging
 
 _LOGGER = logging.getLogger(__name__)
 
-DOMAIN = 'hello_state'
+DOMAIN = "hello_state"
 
-CONF_TEXT = 'text'
-DEFAULT_TEXT = 'No text!'
+CONF_TEXT = "text"
+DEFAULT_TEXT = "No text!"
+
 
 def setup(hass, config):
     """Set up the Hello State component. """
@@ -80,7 +82,7 @@ def setup(hass, config):
     text = config[DOMAIN].get(CONF_TEXT, DEFAULT_TEXT)
 
     # States are in the format DOMAIN.OBJECT_ID
-    hass.states.set('hello_state.Hello_State', text)
+    hass.states.set("hello_state.Hello_State", text)
 
     return True
 ```
@@ -99,11 +101,9 @@ import voluptuous as vol
 
 import homeassistant.helpers.config_validation as cv
 
-CONFIG_SCHEMA = vol.Schema({
-    DOMAIN: vol.Schema({
-      vol.Required(CONF_TEXT): cv.string,
-    })
-}, extra=vol.ALLOW_EXTRA)
+CONFIG_SCHEMA = vol.Schema(
+    {DOMAIN: vol.Schema({vol.Required(CONF_TEXT): cv.string,})}, extra=vol.ALLOW_EXTRA
+)
 ```
 
 Now, when `text:` is missing from the config, Home Assistant will alert the user and not setup your component.
@@ -114,15 +114,17 @@ After a start or a restart of Home Assistant the component will be visible in th
 <img src='/img/en/development/create-component01.png' />
 </p>
 
-In order to expose attributes for a platform, you will need to define a property called `device_state_attributes` on the entity class, which will return a dictionary of attributes:
+In order to expose attributes for a platform, you will need to define a property called `extra_state_attributes` on the entity class, which will return a dictionary of attributes:
 
-```
+```python
 @property
-def device_state_attributes(self):
-    """Return device specific state attributes."""
+def extra_state_attributes(self):
+    """Return entity specific state attributes."""
     return self._attributes
 ```
 
-> Entities also have a similar property `state_attributes`, which normally doesn't need to be defined by new platforms. This property is used by base components to add standard sets of attributes to a state. Example: The light component uses `state_attributes` to add brightness to the state dictionary. If you are designing a new component, you should define `state_attributes` instead.
+:::tip
+Entities also have a similar property `state_attributes`, which should not be overridden by integrations. This property is used by base entity components to add standard sets of attributes to a state. Example: The light component uses `state_attributes` to add brightness to the state dictionary. If you are designing a new integration, you should define `extra_state_attributes` instead.
+:::
 
-To get your component included in the Home Assistant releases, follow the steps described in the [Submit your work](development_submitting.md) section. Basically you only need to move your component in the `homeassistant/component/` directory of your fork and create a Pull Request.
+To get your integration included in the Home Assistant releases, follow the steps described in the [Submit your work](development_submitting.md) section. Basically you only need to move your integration into the `homeassistant/component/` directory of your fork and create a Pull Request.

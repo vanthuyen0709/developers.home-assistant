@@ -6,7 +6,7 @@ The `configuration.yaml` file contains the configuration options for components 
 
 We test the configuration to ensure that users have a great experience and minimize notifications if something is wrong with a platform or component setup before Home Assistant runs.
 
-Besides [voluptuous](https://pypi.python.org/pypi/voluptuous) default types, many custom types are available. For an overview, take a look at the [config_validation.py](https://github.com/home-assistant/home-assistant/blob/master/homeassistant/helpers/config_validation.py) helper.
+Besides [voluptuous](https://pypi.python.org/pypi/voluptuous) default types, many custom types are available. For an overview, take a look at the [config_validation.py](https://github.com/home-assistant/core/blob/dev/homeassistant/helpers/config_validation.py) helper.
 
 - Types: `string`, `byte`, and `boolean`
 - Entity ID: `entity_id` and `entity_ids`
@@ -32,11 +32,14 @@ This section contains snippets for the validation we use.
 It's common to set a default for a sensor if the user doesn't provide a name to use.
 
 ```python
-DEFAULT_NAME = 'Sensor name'
+DEFAULT_NAME = "Sensor name"
 
-PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
-    ...
-    vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
+PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
+    {
+        # ...
+        vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
+    }
+)
 ```
 
 #### Limit the values
@@ -44,11 +47,14 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
 You might want to limit the user's input to a couple of options.
 
 ```python
-DEFAULT_METHOD = 'GET'
+DEFAULT_METHOD = "GET"
 
-PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
-    ...
-    vol.Optional(CONF_METHOD, default=DEFAULT_METHOD): vol.In(['POST', 'GET']),
+PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
+    {
+        # ...
+        vol.Optional(CONF_METHOD, default=DEFAULT_METHOD): vol.In(["POST", "GET"]),
+    }
+)
 ```
 
 #### Port
@@ -58,9 +64,12 @@ All port numbers are from a range of 1 to 65535.
 ```python
 DEFAULT_PORT = 993
 
-PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
-    ...
-    vol.Optional(CONF_PORT, default=DEFAULT_PORT): cv.port,
+PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
+    {
+        # ...
+        vol.Optional(CONF_PORT, default=DEFAULT_PORT): cv.port,
+    }
+)
 ```
 
 #### Lists
@@ -69,12 +78,16 @@ If a sensor has a pre-defined list of available options, test to make sure the c
 
 ```python
 SENSOR_TYPES = {
-    'article_cache': ('Article Cache', 'MB'),
-    'average_download_rate': ('Average Speed', 'MB/s'),
+    "article_cache": ("Article Cache", "MB"),
+    "average_download_rate": ("Average Speed", "MB/s"),
 }
 
-PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
-    ...
-    vol.Optional(CONF_MONITORED_VARIABLES, default=[]):
-        vol.All(cv.ensure_list, [vol.In(SENSOR_TYPES)]),
+PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
+    {
+        # ...
+        vol.Optional(CONF_MONITORED_VARIABLES, default=[]): vol.All(
+            cv.ensure_list, [vol.In(SENSOR_TYPES)]
+        ),
+    }
+)
 ```

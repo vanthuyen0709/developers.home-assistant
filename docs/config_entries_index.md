@@ -1,6 +1,5 @@
 ---
 title: Config Entries
-sidebar_label: Introduction
 ---
 
 Config Entries are configuration data that are persistently stored by Home Assistant. A config entry is created by a user via the UI. The UI flow is powered by a [config flow handler](config_entries_config_flow_handler.md) as defined by the component. Config entries can also have an extra [options flow handler](config_entries_options_flow_handler.md), also defined by the component.
@@ -16,10 +15,10 @@ Config Entries are configuration data that are persistently stored by Home Assis
 | migration error | The config entry had to be migrated to a newer version, but the migration failed.
 | failed unload | The config entry was attempted to be unloaded, but this was either not supported or it raised an exception.
 
-<svg width="508pt" height="188pt" viewBox="0.00 0.00 508.00 188.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<svg class='invertDark' width="508pt" height="188pt" viewBox="0.00 0.00 508.00 188.00" xmlns="http://www.w3.org/2000/svg">
 <g id="graph1" class="graph" transform="scale(1 1) rotate(0) translate(4 184)">
 <title>G</title>
-<polygon fill="white" stroke="white" points="-4,5 -4,-184 505,-184 505,5 -4,5"></polygon>
+<polygon fill="none" stroke="none" points="-4,5 -4,-184 505,-184 505,5 -4,5"></polygon>
 <g id="node1" class="node"><title>not loaded</title>
 <ellipse fill="none" stroke="black" cx="168" cy="-162" rx="51.3007" ry="18"></ellipse>
 <text text-anchor="middle" x="168" y="-157.8" font-family="Times,serif" font-size="14.00">not loaded</text>
@@ -95,37 +94,42 @@ digraph G {
 
 ## Setting up an entry
 
-During startup, Home Assistant first calls the [normal component setup](https://developers.home-assistant.io/docs/en/creating_component_index.html),
+During startup, Home Assistant first calls the [normal component setup](/creating_component_index.md),
 and then call the method `async_setup_entry(hass, entry)` for each entry. If a new Config Entry is
-created at runtime, Home Assistant will also call `async_setup_entry(hass, entry)` ([example](https://github.com/home-assistant/home-assistant/blob/0.68.0/homeassistant/components/hue/__init__.py#L119)).
+created at runtime, Home Assistant will also call `async_setup_entry(hass, entry)` ([example](https://github.com/home-assistant/core/blob/0.68.0/homeassistant/components/hue/__init__.py#L119)).
 
-#### For platforms
+### For platforms
 
 If a component includes platforms, it will need to forward the Config Entry to the platform. This can
-be done by calling the forward function on the config entry manager ([example](https://github.com/home-assistant/home-assistant/blob/0.68.0/homeassistant/components/hue/bridge.py#L81)):
+be done by calling the forward function on the config entry manager ([example](https://github.com/home-assistant/core/blob/0.68.0/homeassistant/components/hue/bridge.py#L81)):
 
 ```python
-# Use `hass.async_add_job` to avoid a circular dependency between the platform and the component
-hass.async_add_job(hass.config_entries.async_forward_entry_setup(config_entry, 'light'))
+# Use `hass.async_create_task` to avoid a circular dependency between the platform and the component
+hass.async_create_task(
+  hass.config_entries.async_forward_entry_setup(
+    config_entry, "light"
+  )
+)
 ```
 
-For a platform to support config entries, it will need to add a setup entry method ([example](https://github.com/home-assistant/home-assistant/blob/0.68.0/homeassistant/components/light/hue.py#L60)):
+For a platform to support config entries, it will need to add a setup entry method ([example](https://github.com/home-assistant/core/blob/0.68.0/homeassistant/components/light/hue.py#L60)):
 
 ```python
 async def async_setup_entry(hass, config_entry, async_add_devices):
+    """Set up entry."""
 ```
 
 ## Unloading entries
 
-Components can optionally support unloading a config entry. When unloading an entry, the component needs to clean up all entities, unsubscribe any event listener and close all connections. To implement this, add `async_unload_entry(hass, entry)` to your component ([example](https://github.com/home-assistant/home-assistant/blob/0.68.0/homeassistant/components/hue/__init__.py#L136)).
+Components can optionally support unloading a config entry. When unloading an entry, the component needs to clean up all entities, unsubscribe any event listener and close all connections. To implement this, add `async_unload_entry(hass, entry)` to your component ([example](https://github.com/home-assistant/core/blob/0.68.0/homeassistant/components/hue/__init__.py#L136)).
 
 For each platform that you forwarded the config entry to, you will need to forward the unloading too.
 
 ```python
-await self.hass.config_entries.async_forward_entry_unload(self.config_entry, 'light')
+await self.hass.config_entries.async_forward_entry_unload(self.config_entry, "light")
 ```
 
-If you need to clean up resources used by an entity in a platform, have the entity implement the [`async_will_remove_from_hass`](entity_index.md#async_will_remove_from_hass) method.
+If you need to clean up resources used by an entity in a platform, have the entity implement the [`async_will_remove_from_hass`](core/entity.md#async_will_remove_from_hass) method.
 
 ## Removal of entries
 
@@ -134,4 +138,13 @@ If a component needs to clean up code when an entry is removed, it can define a 
 ```python
 async def async_remove_entry(hass, entry) -> None:
     """Handle removal of an entry."""
+```
+
+## Migrating config entries to a new version
+
+If the config entry version is changed, `async_migrate_entry` must be implemented to support the migration of old entries. This is documented in detail in the [config flow documentation](/config_entries_config_flow_handler.md#config-entry-migration)
+
+```python
+async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
+    """Migrate old entry."""
 ```

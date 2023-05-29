@@ -7,14 +7,14 @@ Each integration is stored inside a directory named after the integration domain
 
 The bare minimum content of this folder looks like this:
 
- - `manifest.json`: The manifest file describes the integration and its dependencies. [More info](creating_integration_manifest.md)
- - `__init__.py`: The component file. If the integration only offers a platform, you can keep this file limited to a docstring introducing the integration `"""The Mobile App integration."""`.
+- `manifest.json`: The manifest file describes the integration and its dependencies. [More info](creating_integration_manifest.md)
+- `__init__.py`: The component file. If the integration only offers a platform, you can keep this file limited to a docstring introducing the integration `"""The Mobile App integration."""`.
 
 ## Integrating devices - `light.py`, `switch.py` etc
 
 If your integration is going to integrate one or more devices, you will need to do this by creating a platform that interacts with an entity integration. For example, if you want to represent a light device inside Home Assistant, you will create `light.py`, which will contain a light platform for the light integration.
 
-- More info on [available entity integrations](entity_index.md).
+- More info on [available entity integrations](core/entity.md).
 - More info on [creating platforms](creating_platform_index.md).
 
 ## Integrating services - `services.yaml`
@@ -25,7 +25,8 @@ If your integration is going to register services, it will need to provide a des
 
 Home Assistant will look for an integration when it sees the domain referenced in the config file (i.e. `mobile_app:`) or if it is a dependency of another integration. Home Assistant will look at the following locations:
 
- * `<config directory>/custom_components/<domain>`
- * `homeassistant/components/<domain>` (built-in integrations)
+- `<config directory>/custom_components/<domain>`
+- `homeassistant/components/<domain>` (built-in integrations)
 
-You can override a built-in integration by having an integration with the same domain in your `config/custom_components` folder. Note that overriding built-in components is not recommended as you will no longer get updates. It is recommended to pick a unique name.
+You can override a built-in integration by having an integration with the same domain in your `<config directory>/custom_components` folder. [The `manifest.json` file requires a version tag when you override a core integration](creating_integration_manifest/#version). An overridden core integration can be identified by a specific icon in the upper right corner of the integration box in the overview [![Open your Home Assistant instance and show your integrations.](https://my.home-assistant.io/badges/integrations.svg)](https://my.home-assistant.io/redirect/integrations/)
+Note that overriding built-in integrations is not recommended as you will no longer get updates. It is recommended to pick a unique name.
